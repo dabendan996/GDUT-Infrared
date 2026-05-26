@@ -37,7 +37,7 @@ I (..\Core\Inc\usart.h)(0x69E0CF20)
 I (..\Core\Inc\gpio.h)(0x6978A2B4)
 I (..\RC10_LIB\BSP_Driver\Inc\BSP_TimeStamp.h)(0x69624A7C)
 I (..\RC10_LIB\Module\Inc\Module_Ired.h)(0x6A12AE12)
-I (..\RC10_LIB\Module\Inc\Module_SerialProtocol.h)(0x6A12BC63)
+I (..\RC10_LIB\Module\Inc\Module_SerialProtocol.h)(0x6A157AED)
 F (../Core/Src/gpio.c)(0x69C284B9)(-xc -std=gnu11 --target=arm-arm-none-eabi -mcpu=cortex-m7 -mfpu=fpv5-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O0 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -I ../Core/Inc -I ../Drivers/STM32H7xx_HAL_Driver/Inc -I ../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32H7xx/Include -I ../Drivers/CMSIS/Include -I ../RC10_LIB/BSP_Driver/Inc -I ../RC10_LIB/Module/Inc-I./RTE/_rc_10_red_la-ID:/keil5/ARM/PACK/ARM/CMSIS/5.0.1/CMSIS/Include-D__UVISION_VERSION="543" -DSTM32H723xx -D_RTE_ -DUSE_PWR_LDO_SUPPLY -DUSE_HAL_DRIVER -DSTM32H723xx-o rc_10_red_la/gpio.o -MMD)
 I (..\Core\Inc\gpio.h)(0x6978A2B4)
 I (..\Core\Inc\main.h)(0x6A0E7AE7)
@@ -833,7 +833,7 @@ I (..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_tim_ex.h)(0x68D65231)
 I (..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_uart.h)(0x68D65231)
 I (..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_uart_ex.h)(0x68D65231)
 F (..\RC10_LIB\Module\Inc\Module_Ired.h)(0x6A12AE12)()
-F (..\RC10_LIB\Module\Inc\Module_SerialProtocol.h)(0x6A12BC63)()
+F (..\RC10_LIB\Module\Inc\Module_SerialProtocol.h)(0x6A157AED)()
 F (..\RC10_LIB\Module\Src\Module_Ired.cpp)(0x6A1530F2)(-xc++ -std=gnu++17 --target=arm-arm-none-eabi -mcpu=cortex-m7 -mfpu=fpv5-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar -fno-exceptions-gdwarf-4 -O0 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -I ../Core/Inc -I ../Drivers/STM32H7xx_HAL_Driver/Inc -I ../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32H7xx/Include -I ../Drivers/CMSIS/Include -I ../RC10_LIB/BSP_Driver/Inc -I ../RC10_LIB/Module/Inc-I./RTE/_rc_10_red_la-ID:/keil5/ARM/PACK/ARM/CMSIS/5.0.1/CMSIS/Include-D__UVISION_VERSION="543" -DSTM32H723xx -D_RTE_ -DUSE_PWR_LDO_SUPPLY -DUSE_HAL_DRIVER -DSTM32H723xx-o rc_10_red_la/module_ired.o -MMD)
 I (..\RC10_LIB\Module\Inc\Module_Ired.h)(0x6A12AE12)
 I (..\Core\Inc\main.h)(0x6A0E7AE7)
@@ -868,9 +868,9 @@ I (..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_uart_ex.h)(0x68D65231)
 I (..\Core\Inc\tim.h)(0x69E0CF20)
 I (..\Core\Inc\dma.h)(0x6978F8F8)
 I (..\RC10_LIB\BSP_Driver\Inc\BSP_TimeStamp.h)(0x69624A7C)
-I (..\RC10_LIB\Module\Inc\Module_SerialProtocol.h)(0x6A12BC63)
+I (..\RC10_LIB\Module\Inc\Module_SerialProtocol.h)(0x6A157AED)
 F (..\RC10_LIB\Module\Src\Module_SerialProtocol.cpp)(0x6A1530F3)(-xc++ -std=gnu++17 --target=arm-arm-none-eabi -mcpu=cortex-m7 -mfpu=fpv5-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar -fno-exceptions-gdwarf-4 -O0 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -I ../Core/Inc -I ../Drivers/STM32H7xx_HAL_Driver/Inc -I ../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32H7xx/Include -I ../Drivers/CMSIS/Include -I ../RC10_LIB/BSP_Driver/Inc -I ../RC10_LIB/Module/Inc-I./RTE/_rc_10_red_la-ID:/keil5/ARM/PACK/ARM/CMSIS/5.0.1/CMSIS/Include-D__UVISION_VERSION="543" -DSTM32H723xx -D_RTE_ -DUSE_PWR_LDO_SUPPLY -DUSE_HAL_DRIVER -DSTM32H723xx-o rc_10_red_la/module_serialprotocol.o -MMD)
-I (..\RC10_LIB\Module\Inc\Module_SerialProtocol.h)(0x6A12BC63)
+I (..\RC10_LIB\Module\Inc\Module_SerialProtocol.h)(0x6A157AED)
 I (..\Core\Inc\main.h)(0x6A0E7AE7)
 I (..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal.h)(0x68D65231)
 I (..\Core\Inc\stm32h7xx_hal_conf.h)(0x69C284C1)

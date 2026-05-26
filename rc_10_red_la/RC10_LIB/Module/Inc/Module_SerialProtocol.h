@@ -1,6 +1,6 @@
 // SerialProtocol.h
-#ifndef SERIAL_PROTOCOL_H
-#define SERIAL_PROTOCOL_H
+#ifndef MODULE_SERIAL_PROTOCOL_H
+#define MODULE_SERIAL_PROTOCOL_H
 
 #include "main.h"
 #include "string.h"
