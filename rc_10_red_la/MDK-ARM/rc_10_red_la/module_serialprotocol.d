@@ -1,5 +1,6 @@
-rc_10_red_la/module_ired.o: ..\RC10_LIB\Module\Src\Module_Ired.cpp \
-  ..\RC10_LIB\Module\Inc\Module_Ired.h ..\Core\Inc\main.h \
+rc_10_red_la/module_serialprotocol.o: \
+  ..\RC10_LIB\Module\Src\Module_SerialProtocol.cpp \
+  ..\RC10_LIB\Module\Inc\Module_SerialProtocol.h ..\Core\Inc\main.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal.h \
   ..\Core\Inc\stm32h7xx_hal_conf.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_rcc.h \
@@ -28,6 +29,5 @@ rc_10_red_la/module_ired.o: ..\RC10_LIB\Module\Src\Module_Ired.cpp \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_tim_ex.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_uart.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_uart_ex.h \
-  ..\Core\Inc\tim.h ..\Core\Inc\dma.h \
-  ..\RC10_LIB\BSP_Driver\Inc\BSP_TimeStamp.h \
-  ..\RC10_LIB\Module\Inc\Module_SerialProtocol.h
+  ..\RC10_LIB\BSP_Driver\Inc\BSP_TimeStamp.h ..\Core\Inc\tim.h \
+  ..\RC10_LIB\Module\Inc\Module_Ired.h ..\Core\Inc\dma.h

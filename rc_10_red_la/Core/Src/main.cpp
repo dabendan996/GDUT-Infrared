@@ -29,8 +29,8 @@
 #include "string.h"
 #include "BSP_TimeStamp.h"
 #include "Module_Ired.h"
-#include "SerialProtocol.h"
-#include "Serial1Protocol.h"
+#include "Module_SerialProtocol.h"
+//#include "Serial1Protocol.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -86,7 +86,7 @@ volatile uint8_t g_recv_parity;           // 接收到的奇偶位
 
 // 全局串口协议实例
 SerialProtocol& g_serialProto = SerialProtocol::getInstance();
-Serial1Protocol& g_serialProto1=Serial1Protocol::getInstance();
+//Serial1Protocol& g_serialProto1=Serial1Protocol::getInstance();
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -110,16 +110,16 @@ void onSerial1SendResult(uint8_t* data, uint8_t parity, uint8_t success) {
 }
 
 // 等待发送完成的函数（无限等待）
-void waitForSendComplete(void) {
-    while (1) {
-        Serial1Protocol::getInstance().process();  // 必须持续处理
-        if (g_send_complete) {
-            g_send_complete = 0;  // 清除标志
-            break;  // 退出循环
-        }
-        HAL_Delay(1);
-    }
-}
+//void waitForSendComplete(void) {
+//    while (1) {
+//        Serial1Protocol::getInstance().process();  // 必须持续处理
+//        if (g_send_complete) {
+//            g_send_complete = 0;  // 清除标志
+//            break;  // 退出循环
+//        }
+//        HAL_Delay(1);
+//    }
+//}
 // 数据接收回调
 void onSerial1DataReceived(uint8_t* data, uint8_t parity) {
     // 直接使用传入的 data 和 parity
@@ -134,14 +134,14 @@ void onSerial1DataReceived(uint8_t* data, uint8_t parity) {
 }
 
 
-// 等待数据接收（无限等待）
-void waitForData(void) {
-    while (g_data_received == 0) {
-        Serial1Protocol::getInstance().process();
-        HAL_Delay(1);
-    }
-    g_data_received = 0;  // 清除标志
-}
+//// 等待数据接收（无限等待）
+//void waitForData(void) {
+//    while (g_data_received == 0) {
+//        Serial1Protocol::getInstance().process();
+//        HAL_Delay(1);
+//    }
+//    g_data_received = 0;  // 清除标志
+//}
 /* USER CODE END 0 */
 
 /**

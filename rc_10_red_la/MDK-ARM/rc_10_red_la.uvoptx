@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <ProjectOpt xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="project_optx.xsd">
 
   <SchemaVersion>1.0</SchemaVersion>
@@ -104,16 +104,16 @@
         <bSchkAxf>0</bSchkAxf>
         <bTchkAxf>0</bTchkAxf>
         <nTsel>2</nTsel>
-        <sDll />
-        <sDllPa />
-        <sDlgDll />
-        <sDlgPa />
-        <sIfile />
-        <tDll />
-        <tDllPa />
-        <tDlgDll />
-        <tDlgPa />
-        <tIfile />
+        <sDll></sDll>
+        <sDllPa></sDllPa>
+        <sDlgDll></sDlgDll>
+        <sDlgPa></sDlgPa>
+        <sIfile></sIfile>
+        <tDll></tDll>
+        <tDllPa></tDllPa>
+        <tDlgDll></tDlgDll>
+        <tDlgPa></tDlgPa>
+        <tIfile></tIfile>
         <pMon>BIN\CMSIS_AGDI.dll</pMon>
       </DebugOpt>
       <TargetDriverDllRegistry>
@@ -130,7 +130,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>ARMDBGFLAGS</Key>
-          <Name />
+          <Name></Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -166,8 +166,8 @@
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\RC10_LIB\Module\SerialProtocol.cpp</Filename>
-          <ExecCommand />
+          <Filename>D:\desktop\red_biu\send\red_ray\rc_10_red_la\RC10_LIB\Module\SerialProtocol.cpp</Filename>
+          <ExecCommand></ExecCommand>
           <Expression>\\rc_10_red_la\../RC10_LIB/Module/SerialProtocol.cpp\68</Expression>
         </Bp>
         <Bp>
@@ -182,8 +182,8 @@
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\RC10_LIB\Module\SerialProtocol.cpp</Filename>
-          <ExecCommand />
+          <Filename>D:\desktop\red_biu\send\red_ray\rc_10_red_la\RC10_LIB\Module\SerialProtocol.cpp</Filename>
+          <ExecCommand></ExecCommand>
           <Expression>\\rc_10_red_la\../RC10_LIB/Module/SerialProtocol.cpp\60</Expression>
         </Bp>
       </Breakpoint>
@@ -390,19 +390,19 @@
         <newCpu>0</newCpu>
         <uProt>0</uProt>
       </DebugFlag>
-      <LintExecutable />
-      <LintConfigFile />
+      <LintExecutable></LintExecutable>
+      <LintConfigFile></LintConfigFile>
       <bLintAuto>0</bLintAuto>
       <bAutoGenD>0</bAutoGenD>
       <LntExFlags>0</LntExFlags>
-      <pMisraName />
-      <pszMrule />
-      <pSingCmds />
-      <pMultCmds />
-      <pMisraNamep />
-      <pszMrulep />
-      <pSingCmdsp />
-      <pMultCmdsp />
+      <pMisraName></pMisraName>
+      <pszMrule></pszMrule>
+      <pSingCmds></pSingCmds>
+      <pMultCmds></pMultCmds>
+      <pMisraNamep></pMisraNamep>
+      <pszMrulep></pszMrulep>
+      <pSingCmdsp></pSingCmdsp>
+      <pMultCmdsp></pMultCmdsp>
       <DebugDescription>
         <Enable>0</Enable>
         <EnableFlashSeq>0</EnableFlashSeq>
@@ -810,12 +810,12 @@
     <File>
       <GroupNumber>6</GroupNumber>
       <FileNumber>30</FileNumber>
-      <FileType>8</FileType>
+      <FileType>5</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\RC10_LIB\Module\Module_Ired.cpp</PathWithFileName>
-      <FilenameWithoutPath>Module_Ired.cpp</FilenameWithoutPath>
+      <PathWithFileName>..\RC10_LIB\Module\Inc\Module_Ired.h</PathWithFileName>
+      <FilenameWithoutPath>Module_Ired.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -826,20 +826,20 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\RC10_LIB\Module\Module_Ired.h</PathWithFileName>
-      <FilenameWithoutPath>Module_Ired.h</FilenameWithoutPath>
+      <PathWithFileName>..\RC10_LIB\Module\Inc\Module_SerialProtocol.h</PathWithFileName>
+      <FilenameWithoutPath>Module_SerialProtocol.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
     <File>
       <GroupNumber>6</GroupNumber>
       <FileNumber>32</FileNumber>
-      <FileType>5</FileType>
+      <FileType>8</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\RC10_LIB\Module\SerialProtocol.h</PathWithFileName>
-      <FilenameWithoutPath>SerialProtocol.h</FilenameWithoutPath>
+      <PathWithFileName>..\RC10_LIB\Module\Src\Module_Ired.cpp</PathWithFileName>
+      <FilenameWithoutPath>Module_Ired.cpp</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -850,32 +850,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\RC10_LIB\Module\SerialProtocol.cpp</PathWithFileName>
-      <FilenameWithoutPath>SerialProtocol.cpp</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>6</GroupNumber>
-      <FileNumber>34</FileNumber>
-      <FileType>8</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\RC10_LIB\Module\Serial1Protocol.cpp</PathWithFileName>
-      <FilenameWithoutPath>Serial1Protocol.cpp</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>6</GroupNumber>
-      <FileNumber>35</FileNumber>
-      <FileType>5</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\RC10_LIB\Module\Serial1Protocol.h</PathWithFileName>
-      <FilenameWithoutPath>Serial1Protocol.h</FilenameWithoutPath>
+      <PathWithFileName>..\RC10_LIB\Module\Src\Module_SerialProtocol.cpp</PathWithFileName>
+      <FilenameWithoutPath>Module_SerialProtocol.cpp</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -889,7 +865,7 @@
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>7</GroupNumber>
-      <FileNumber>36</FileNumber>
+      <FileNumber>34</FileNumber>
       <FileType>8</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -901,7 +877,7 @@
     </File>
     <File>
       <GroupNumber>7</GroupNumber>
-      <FileNumber>37</FileNumber>
+      <FileNumber>35</FileNumber>
       <FileType>5</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>

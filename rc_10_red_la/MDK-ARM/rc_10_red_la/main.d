@@ -29,5 +29,5 @@ rc_10_red_la/main.o: ..\Core\Src\main.cpp ..\Core\Inc\main.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_uart_ex.h \
   ..\Core\Inc\dma.h ..\Core\Inc\tim.h ..\Core\Inc\usart.h \
   ..\Core\Inc\gpio.h ..\RC10_LIB\BSP_Driver\Inc\BSP_TimeStamp.h \
-  ..\RC10_LIB\Module\Module_Ired.h ..\RC10_LIB\Module\SerialProtocol.h \
-  ..\RC10_LIB\Module\Serial1Protocol.h
+  ..\RC10_LIB\Module\Inc\Module_Ired.h \
+  ..\RC10_LIB\Module\Inc\Module_SerialProtocol.h

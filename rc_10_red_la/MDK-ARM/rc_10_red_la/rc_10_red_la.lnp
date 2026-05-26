@@ -29,8 +29,7 @@
 "rc_10_red_la\stm32h7xx_hal_uart_ex.o"
 "rc_10_red_la\system_stm32h7xx.o"
 "rc_10_red_la\module_ired.o"
-"rc_10_red_la\serialprotocol.o"
-"rc_10_red_la\serial1protocol.o"
+"rc_10_red_la\module_serialprotocol.o"
 "rc_10_red_la\bsp_timestamp.o"
 --strict --scatter "rc_10_red_la\rc_10_red_la.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols

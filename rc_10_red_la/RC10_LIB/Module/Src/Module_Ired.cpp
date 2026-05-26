@@ -1,6 +1,6 @@
 /* USER CODE BEGIN 1 */
 #include "Module_Ired.h"
-#include "SerialProtocol.h"
+#include "Module_SerialProtocol.h"
 uint16_t step1;
 uint16_t step2;
 uint16_t step3;
