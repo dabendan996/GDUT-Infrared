@@ -53,10 +53,12 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-static void delay_us(uint32_t us);
-static void DWT_Init(void);
-void IR_Send(uint8_t data);
-void Red_Ray_DATA_Procss(uint32_t*Data);
+void delay_us(uint32_t us);
+void DWT_Init(void);
+void IR_Send(uint8_t* data,uint8_t reset_timeout);
+void Red_Ray_DATA_Procss(uint32_t*Data,HAL_TIM_ActiveChannel channel);
+void Enable_Capture_And_DMA(void);
+void Disable_Capture_And_DMA(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

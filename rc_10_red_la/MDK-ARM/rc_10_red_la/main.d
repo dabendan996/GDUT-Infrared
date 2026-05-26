@@ -1,4 +1,4 @@
-rc_10_red_la/main.o: ..\Core\Src\main.c ..\Core\Inc\main.h \
+rc_10_red_la/main.o: ..\Core\Src\main.cpp ..\Core\Inc\main.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal.h \
   ..\Core\Inc\stm32h7xx_hal_conf.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_rcc.h \
@@ -28,4 +28,6 @@ rc_10_red_la/main.o: ..\Core\Src\main.c ..\Core\Inc\main.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_uart.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_uart_ex.h \
   ..\Core\Inc\dma.h ..\Core\Inc\tim.h ..\Core\Inc\usart.h \
-  ..\Core\Inc\gpio.h
+  ..\Core\Inc\gpio.h ..\RC10_LIB\BSP_Driver\Inc\BSP_TimeStamp.h \
+  ..\RC10_LIB\Module\Module_Ired.h ..\RC10_LIB\Module\SerialProtocol.h \
+  ..\RC10_LIB\Module\Serial1Protocol.h
