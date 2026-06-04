@@ -66,7 +66,7 @@ uint8_t uart2_data_rec[30];
 uint8_t uart2_data_snd[30] = {0};
 uint8_t Need_Send_Data[30] = {0};
 Data_State state = Receive;
-IRManager g_irManager(0);  // R1首位发0，R2首位发1
+IRManager g_irManager(1);  // R1首位发0，R2首位发1
 uint8_t Usart_Receive_Suc_Flag = 0;
 volatile uint8_t uart_tx_complete = 0;
 
@@ -213,38 +213,6 @@ int main(void)
 
         // 处理串口协议
         g_serialProto.process();
-//		  	g_serialProto1.process();
-        /* USER CODE END WHILE */
-        /* 示例：主动发送指令 */
-//        static uint8_t send_flag = 0;
-//        if (send_flag == 0) {
-//            send_flag = 1;
-//            // 延时2秒后发送第一条指令
-//            HAL_Delay(2000);
-//            
-//            // 串口1主动发送指令
-//            uint8_t cmd1[3] = {0x01, 0x02, 0x03};
-//           g_serialProto1.sendCommand(cmd1);
-//             // 等待发送完成（无限等待）
-//            waitForSendComplete();
-//						g_serialProto1.sendCommand(cmd1);
-//						waitForSendComplete();
-//					  g_serialProto1.sendCommand(cmd1);
-//						waitForSendComplete();
-//            // 串口2主动发送红外指令（通过串口1收到的数据触发）
-//            // 实际上串口2的红外发送是由串口1收到的数据触发的
-//        }
-//         if (g_serialProto1.hasNewData()) {
-//            g_serialProto1.getReceivedData(data, &parity);
-//        }
-				
-//        if (g_data_received) {
-//            g_data_received = 0;  // 清除标志
-//            // 根据接收到的数据执行操作
-//            if (g_recv_data[0] == 0x01 && g_recv_data[1] == 0x02 && g_recv_data[2] == 0x03) {
-//            }
-//					}
-//         HAL_Delay(1);
         /* USER CODE BEGIN 3 */
     }
     /* USER CODE END 3 */
