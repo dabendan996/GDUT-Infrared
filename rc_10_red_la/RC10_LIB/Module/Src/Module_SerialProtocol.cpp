@@ -208,7 +208,20 @@ void SerialProtocol::process(void) {
             uint8_t is_ack = (received_data[0] == 0x00 && 
                               received_data[1] == 0x00 && 
                               received_data[2] == 0x00);
-            
+					
+            uint8_t is_stop=(received_data[0] == 0xFF && 
+                              received_data[1] == 0xFF && 
+                              received_data[2] == 0xFF);
+					
+					if(is_stop==1)
+					{
+						if (m_irManager)
+						{
+						m_irManager->state = Receive;
+						}
+					}
+					else
+					{
             if (m_state == SERIAL_STATE_WAITING_ACK && is_ack) {
                 // 收到串口应答，发送成功
                 m_state = SERIAL_STATE_IDLE;
@@ -225,21 +238,12 @@ void SerialProtocol::process(void) {
                 uint8_t is_same_data = (memcmp(received_data, m_last_rx_data, SERIAL_DATA_LEN) == 0);
                 uint8_t is_same_parity = (received_parity == m_last_rx_parity);
                 
-                // ? 分支A：应答重发（串口1没收到应答，重发相同指令）
-                if (is_same_as_last_processed && m_ack_sent && m_need_send_ack == 0) {
-                    // 串口1没收到应答，重发一次应答
-                    sendOneAckFrame();
-                    m_ack_sent = 1;
-                    m_ack_retry_count++;
-                }
-                // ? 分支B：新数据或奇偶不同的数据
-                else if (!is_same_data || (is_same_data && !is_same_parity)) {
+                if (!is_same_data || (is_same_data && !is_same_parity)) {
                     
                     if (!is_same_as_last_processed) {
                         // 新指令
                         memcpy(m_last_processed_data, received_data, SERIAL_DATA_LEN);
                         m_last_processed_parity = received_parity;
-                        m_need_send_ack = 0;
                         m_ack_sent = 0;  // 新指令，重置应答标志
                         m_ack_retry_count = 0;
                         
@@ -259,6 +263,7 @@ void SerialProtocol::process(void) {
                 }
                 // 分支C：完全相同的数据且m_ack_sent=0 → 忽略
             }
+					}
         }
         
         // 重新启动接收
@@ -267,15 +272,6 @@ void SerialProtocol::process(void) {
             __HAL_UART_CLEAR_IDLEFLAG(m_huart);
         }
     }
-    
-    // ========== 1.5 红外完成后发送应答 ==========
-    if (m_need_send_ack && !m_ack_sent && m_state == SERIAL_STATE_IDLE) {
-        m_need_send_ack = 0;
-        sendOneAckFrame();
-        m_ack_sent = 1;
-	//		  m_waiting_ir_complete = 0;
-    }
-    
     // ========== 2. 处理发送队列 ==========
     if (store_flag && m_state == SERIAL_STATE_IDLE && m_queue_count > 0) {
         uint8_t queue_data[4];

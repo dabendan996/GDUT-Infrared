@@ -45,7 +45,7 @@ IRManager::IRManager(uint8_t Send_Data_Type)
     memset(last_processed_data, 0, sizeof(last_processed_data));
     last_data_valid = 0;
     
-    // 300ms窗口初始化
+    // 500ms窗口初始化
     last_response_end_time = 0;
     memset(last_received_command, 0, sizeof(last_received_command));
     memset(pending_command, 0, sizeof(pending_command));
@@ -150,60 +150,17 @@ void IRManager::handleNewData(uint8_t* new_data)
 {
     uint64_t now_us = TimeStamp::getInstance().getMicroseconds();
     
-    // 检查是否在500ms窗口期内
-    bool in_window_now = (last_response_end_time > 0 && 
-                          (now_us - last_response_end_time) < 500000);
-    
+
     // 数据去重检查
     if (last_data_valid && memcmp(new_data, last_processed_data, 4) == 0)
     {
-        if (in_window_now && state == Receive)
-        {
-            storeToPendingAndCheck(new_data);
-        }
-        return;
+
+        // ★ 无论窗口内外，相同数据都不更新 last_processed_data 和 last_received_command
+        return;  // 直接返回，不继续处理
     }
-    
-    // ★ 只有在非窗口期才更新 last_received_command
-    if (!in_window_now)
+
+     else if (memcmp(new_data, last_processed_data, 4) != 0)
     {
-        memcpy(last_received_command, new_data, 4);
-    }
-    
-    // 保存本次数据供下次去重
-    memcpy(last_processed_data, new_data, 4);
-    last_data_valid = 1;
-    in_window = in_window_now;
-    
-//    // ★ 新增：处理 Receive_Respon 状态下的应答数据
-//    if (state == Receive_Respon)
-//    {
-//        // 收到应答数据（握手成功）
-//        // 此时 should_pending_command 中有等待发送的数据
-//        if (has_pending_command && store_flag == 0)
-//        {
-//            // 发送 pending 中的数据到串口
-//            memcpy(uart2_data_snd + 2, pending_command, 4);
-//            store_flag = 1;
-//            has_pending_command = 0;
-//            
-//            // 更新 last_received_command 为当前命令
-//            memcpy(last_received_command, pending_command, 4);
-//        }
-//        
-//        // ★ 关键：恢复状态到 Receive
-//        state = Receive;
-//        last_response_end_time = 0;  // 清除窗口
-//        return;
-//    }
-    
-    if (in_window && state == Receive)
-    {
-        storeToPendingAndCheck(new_data);
-    }
-    else if (state == Receive)
-    {
-        state = Receive_Respon;
         if (queue_count < QUEUE_SIZE)
         {
             memcpy(send_queue[queue_tail], new_data, 4);
@@ -211,7 +168,15 @@ void IRManager::handleNewData(uint8_t* new_data)
             queue_count++;
         }
         last_capture_tick_us = TimeStamp::getInstance().getMicroseconds();
+				// 保存本次数据供下次去重
+//				for(uint8_t i=0;i<4;i++)
+//				{
+//					last_processed_data[i]=new_data[i];
+//				}
+				memcpy(last_processed_data, new_data, 4);
+				
     }
+		last_data_valid = 1;
 }
 void IRManager::getReceivedData(uint8_t* data_out)
 {
@@ -360,6 +325,7 @@ void IRManager::Red_Ray_DATA_Procss(uint32_t* Data, HAL_TIM_ActiveChannel channe
 		}
     if(break_step == 0)
     {
+			uint8_t frame_processed = 0;  // 添加标志
         for(uint8_t i = 0; i < LENGTH/8; i++)
         {
             uint8_t val = 0;
@@ -391,43 +357,12 @@ void IRManager::Red_Ray_DATA_Procss(uint32_t* Data, HAL_TIM_ActiveChannel channe
                     }
                     else
                     {
-                       // ========== ：使用去重和队列 ==========
+                    if (!frame_processed) {
                         uint8_t new_data[4];
                         memcpy(new_data, &Data2[i-3], 4);
                         handleNewData(new_data);
-										    if (!in_window)
-														{
-																// 只有不在窗口期内才切换状态
-																sum = 0;
-																for (int j = (i-3)*8; j < (i+1)*8; j++)
-																{
-																		sum += Data1[j];
-																}
-																sum = ((((sum+64)*0.56+10))*5)*1000;
-														}
-														// 窗口期内：保持 Receive 状态，不启动应答等待
-														break;                        
-                    }
-                }
-                else if(crc == (Data2[i]&0x3F) && state == Receive_Respon)
-                {
-                    last_capture_tick_us = TimeStamp::getInstance().getMicroseconds();
-                }
-                else if(crc == (Data2[i]&0x3F) && state == Send)
-                {
-                    if(Data2[i-1]+Data2[i-2]+Data2[i-3]==0)
-                    {
-											  if (!ir_complete_processed)
-													{
-														ir_complete_processed = 1;
-														need_notify_ir_complete = 1;
-												  }
-        
-												send_cnt = 0;
-												Start_Send_delay = 0;
-											  Clear_Data();
-                        state = Receive;
-                        break;
+                        frame_processed = 1;
+                    }             
                     }
                 }
             }
@@ -693,55 +628,18 @@ void IRManager::HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 void IRManager::process(void)
 {
     uint64_t now_us = TimeStamp::getInstance().getMicroseconds();
-    if (state == Receive_Respon)
+
+    if(state == Send)
     {
-        now_us = TimeStamp::getInstance().getMicroseconds();
-        if ((now_us - last_capture_tick_us) > (CAPTURE_TIMEOUT_US))
-        {
-            state = Receive;
-					  last_response_end_time = now_us;
-        }
-        else
-        {
-            if (capture_active)
-            {
-                Disable_Capture_And_DMA();
-                capture_active = 0;
-            }
-						
-                IR_Send(Respon_Data, 0);
-                delay_us(12 * 1000);
-        }
-    }
-    else if(state == Send)
-    {
-        if(Start_Send_delay == 0)
-        {  
-						if (capture_active)
-						{
-								Disable_Capture_And_DMA();
-								capture_active = 0;
-						}
-					  step5++;
-            Send_Data_cnt = 0;
-            IR_Send(Send_Data, 1);
-            send_cnt++;
-            delay_us(12 * 1000);
-            if(send_cnt ==3)
-            {
-                last_send_delay_us = now_us;
-                Start_Send_delay = 1;
-                Enable_Capture_And_DMA();
-            }
-        }
-        else if(send_cnt ==3 && (now_us - last_send_delay_us) > (((Send_Data_cnt * 560 + 28000) * send_cnt * 1)) && Start_Send_delay == 1)
-        {
-//					  Enable_Capture_And_DMA();
-					  step3++;
-            send_cnt = 0;
-            Start_Send_delay = 0;
-					  
-        }
+				if (capture_active)
+				{
+						Disable_Capture_And_DMA();
+						capture_active = 0;
+				}
+				Send_Data_cnt = 0;
+				IR_Send(Send_Data, 1);
+				send_cnt++;
+				delay_us(12 * 1000);
     }
     else if(state == Receive)
     {
@@ -756,86 +654,12 @@ void IRManager::process(void)
         capture_active = 1;
         need_to_enable_capture = 0;
     }		
-// ========== 新增：500ms窗口处理 ==========
-    if (state == Receive && last_response_end_time > 0)
-    {
-        if ((now_us - last_response_end_time) < 500000)  // 300ms内
-        {
-            // 检查是否有待发送的数据
-            if (has_pending_command)
-            {
-                // 比较是否与上次相同
-                if (isDataSame(pending_command, last_received_command))
-                {
-										// 相同数据，重新发送应答（多次握手）
-										if (capture_active)
-										{
-												Disable_Capture_And_DMA();
-												capture_active = 0;
-										}
-										state=Receive_Respon;
-										// 重置超时计时，继续等待应答
-										last_capture_tick_us = TimeStamp::getInstance().getMicroseconds();;
-																				// ★ 清除 pending，避免重复重发
-										has_pending_command = 0;
-										memset(pending_command, 0, 4);
-                }
-                else
-                {
-                    // 不同，发送上次数据
-                    if (store_flag == 0)
-                    {
-                        SerialProtocol::getInstance().pushToSendQueue(last_received_command);
-                        // 更新上次数据为新的待发送数据
-                        memcpy(last_received_command, pending_command, 4);
-                        has_pending_command = 0;
-                    }
-                }
-            }
-        }
-        else
-        {
-           // 500ms窗口结束，发送数据
-            if (store_flag == 0)
-            {
-                if (has_pending_command)//窗口期内收到不同命令B，且B没有触发立即发送A
-                {
-                    // 窗口期内收到了新命令（且未被立即发送），发送上次数据
-//                    memcpy(uart2_data_snd + 2, last_received_command, 4);
-//                    store_flag = 1;
-									  SerialProtocol::getInstance().pushToSendQueue(last_received_command);
-                    memcpy(last_received_command, pending_command, 4);
-                    has_pending_command = 0;
-                }
-                else if (queue_count > 0)
-                {
-                    // 窗口期内没有新命令，从队列取数据发送
-                    SerialProtocol::getInstance().pushToSendQueue(send_queue[queue_head]);
-                    queue_head = (queue_head + 1) % QUEUE_SIZE;
-                    queue_count--;
-                }
-                else if (last_data_valid)//这个分支是保底机制：当正常路径（队列、pending）都失败时，确保数据不会丢失
-                {
-                    // 发送当前数据
-                   SerialProtocol::getInstance().pushToSendQueue(last_received_command);
-                }
-            }
-            last_response_end_time = 0;  // 重置窗口
-        }
-    }
-    
-	if (state == Receive &&last_response_end_time == 0 && store_flag == 0 && queue_count > 0)//防止串口数据还没发送完成造成数据覆盖，将数据存入缓存区
+	if (state == Receive && store_flag == 0 && queue_count > 0)//防止串口数据还没发送完成造成数据覆盖，将数据存入缓存区
 	{
 			SerialProtocol::getInstance().pushToSendQueue(send_queue[queue_head]);
 			queue_head = (queue_head + 1) % QUEUE_SIZE;
 			queue_count--;
 	}
-	if (need_notify_ir_complete) {
-		    step4++;
-        need_notify_ir_complete = 0;
-		    ir_complete_processed = 0;  // 重置，准备下一次
-        SerialProtocol::getInstance().onInfraredSendComplete(1);
-    }
 }
 
 
