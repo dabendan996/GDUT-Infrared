@@ -656,7 +656,7 @@ void IRManager::process(void)
     }		
 	if (state == Receive && store_flag == 0 && queue_count > 0)//防止串口数据还没发送完成造成数据覆盖，将数据存入缓存区
 	{
-			SerialProtocol::getInstance().pushToSendQueue(send_queue[queue_head]);
+//			SerialProtocol::getInstance().pushToSendQueue(send_queue[queue_head]);
 			queue_head = (queue_head + 1) % QUEUE_SIZE;
 			queue_count--;
 	}

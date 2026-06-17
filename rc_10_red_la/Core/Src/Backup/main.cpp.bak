@@ -29,8 +29,8 @@
 #include "string.h"
 #include "BSP_TimeStamp.h"
 #include "Module_Ired.h"
-#include "SerialProtocol.h"
-#include "Serial1Protocol.h"
+#include "Module_SerialProtocol.h"
+//#include "Serial1Protocol.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -66,10 +66,10 @@ uint8_t uart2_data_rec[30];
 uint8_t uart2_data_snd[30] = {0};
 uint8_t Need_Send_Data[30] = {0};
 Data_State state = Receive;
-IRManager g_irManager(0);  // R1首位发0，R2首位发1
+IRManager g_irManager(0);  // R1首位发0，R2首位发1I
 uint8_t Usart_Receive_Suc_Flag = 0;
 volatile uint8_t uart_tx_complete = 0;
-
+uint64_t times=0;
 uint8_t data[3]={0};
 uint8_t parity=0;
 static uint8_t last_data[4] = {0};
@@ -85,8 +85,8 @@ volatile uint8_t g_recv_data[3];          // 接收到的数据
 volatile uint8_t g_recv_parity;           // 接收到的奇偶位
 
 // 全局串口协议实例
-SerialProtocol& g_serialProto = SerialProtocol::getInstance();
-Serial1Protocol& g_serialProto1=Serial1Protocol::getInstance();
+SerialProtocol* g_serialProto = SerialProtocol::getInstance();
+//Serial1Protocol& g_serialProto1=Serial1Protocol::getInstance();
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -99,6 +99,14 @@ void delay_us(uint32_t us);
 void DWT_Init(void);
 void Callback_Fuc(uint8_t *buf, uint16_t len);
 uint8_t uart_cnt = 0;
+
+
+// ===== 添加调试变量 =====
+volatile uint32_t debug_uart_irq_count = 0;      // 串口中断次数
+volatile uint32_t debug_dma_rx_count = 0;        // DMA接收完成次数
+volatile uint32_t debug_uart_error_count = 0;    // 串口错误次数
+volatile uint32_t debug_process_count = 0;       // process调用次数
+volatile uint8_t debug_last_state = 0;           // 最后状态
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -110,16 +118,16 @@ void onSerial1SendResult(uint8_t* data, uint8_t parity, uint8_t success) {
 }
 
 // 等待发送完成的函数（无限等待）
-void waitForSendComplete(void) {
-    while (1) {
-        Serial1Protocol::getInstance().process();  // 必须持续处理
-        if (g_send_complete) {
-            g_send_complete = 0;  // 清除标志
-            break;  // 退出循环
-        }
-        HAL_Delay(1);
-    }
-}
+//void waitForSendComplete(void) {
+//    while (1) {
+//        Serial1Protocol::getInstance().process();  // 必须持续处理
+//        if (g_send_complete) {
+//            g_send_complete = 0;  // 清除标志
+//            break;  // 退出循环
+//        }
+//        HAL_Delay(1);
+//    }
+//}
 // 数据接收回调
 void onSerial1DataReceived(uint8_t* data, uint8_t parity) {
     // 直接使用传入的 data 和 parity
@@ -134,14 +142,14 @@ void onSerial1DataReceived(uint8_t* data, uint8_t parity) {
 }
 
 
-// 等待数据接收（无限等待）
-void waitForData(void) {
-    while (g_data_received == 0) {
-        Serial1Protocol::getInstance().process();
-        HAL_Delay(1);
-    }
-    g_data_received = 0;  // 清除标志
-}
+//// 等待数据接收（无限等待）
+//void waitForData(void) {
+//    while (g_data_received == 0) {
+//        Serial1Protocol::getInstance().process();
+//        HAL_Delay(1);
+//    }
+//    g_data_received = 0;  // 清除标志
+//}
 /* USER CODE END 0 */
 
 /**
@@ -193,7 +201,7 @@ int main(void)
     g_irManager.init(&htim2, &htim4, &htim3, &htim1, &htim8);
 
     // 初始化串口协议，传入 IRManager 指针
-    g_serialProto.init(&huart2, &g_irManager);
+    g_serialProto->init(&huart2, &g_irManager);
 
 //    g_serialProto1.init(&huart2);
 		  // 设置回调
@@ -209,42 +217,8 @@ int main(void)
     /* USER CODE BEGIN WHILE */
     while (1) {
         // 处理红外模块
-        g_irManager.process();
-
-        // 处理串口协议
-        g_serialProto.process();
-//		  	g_serialProto1.process();
-        /* USER CODE END WHILE */
-        /* 示例：主动发送指令 */
-//        static uint8_t send_flag = 0;
-//        if (send_flag == 0) {
-//            send_flag = 1;
-//            // 延时2秒后发送第一条指令
-//            HAL_Delay(2000);
-//            
-//            // 串口1主动发送指令
-//            uint8_t cmd1[3] = {0x01, 0x02, 0x03};
-//           g_serialProto1.sendCommand(cmd1);
-//             // 等待发送完成（无限等待）
-//            waitForSendComplete();
-//						g_serialProto1.sendCommand(cmd1);
-//						waitForSendComplete();
-//					  g_serialProto1.sendCommand(cmd1);
-//						waitForSendComplete();
-//            // 串口2主动发送红外指令（通过串口1收到的数据触发）
-//            // 实际上串口2的红外发送是由串口1收到的数据触发的
-//        }
-//         if (g_serialProto1.hasNewData()) {
-//            g_serialProto1.getReceivedData(data, &parity);
-//        }
-				
-//        if (g_data_received) {
-//            g_data_received = 0;  // 清除标志
-//            // 根据接收到的数据执行操作
-//            if (g_recv_data[0] == 0x01 && g_recv_data[1] == 0x02 && g_recv_data[2] == 0x03) {
-//            }
-//					}
-//         HAL_Delay(1);
+    g_irManager.process();
+    g_serialProto->process();
         /* USER CODE BEGIN 3 */
     }
     /* USER CODE END 3 */
@@ -335,22 +309,45 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
     if (huart->Instance == USART2) {
-        g_serialProto.onUartReceive(huart->pRxBuffPtr, Size);
+        g_serialProto->onUartReceive(huart->pRxBuffPtr, Size);
+			  times++;
     }
 }
-
-/**
- * @brief 串口发送完成回调（DMA）
- * @param huart 串口号
- */
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
-{
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
     if (huart->Instance == USART2) {
-        g_serialProto.onUartTxComplete();
-        uart_tx_complete = 1;
-    }
+        debug_uart_error_count++;
+        
+        uint32_t error_code = huart->ErrorCode;
+        debug_last_state = 1;
+        
+        // ===== 错误恢复 =====
+        // 1. 停止DMA
+        HAL_UART_DMAStop(huart);
+        
+        // 2. 清除标志
+        __HAL_UART_CLEAR_OREFLAG(huart);
+        __HAL_UART_CLEAR_NEFLAG(huart);
+        __HAL_UART_CLEAR_FEFLAG(huart);
+        __HAL_UART_CLEAR_PEFLAG(huart);
+        __HAL_UART_CLEAR_FLAG(huart, UART_FLAG_RXNE);
+        __HAL_UART_CLEAR_FLAG(huart, UART_FLAG_IDLE);
+        
+        // 3. 重置状态
+        g_serialProto->m_rx_ready = 0;
+        g_serialProto->m_rx_size = 0;
+        memset(g_serialProto->m_rx_buffer, 0, 30);
+        
+        // 4. 延时一小段时间（等待对方稳定）
+        HAL_Delay(10);
+        
+        // 5. 重新启动
+        HAL_UARTEx_ReceiveToIdle_DMA(huart, g_serialProto->m_rx_buffer, 30);
+        __HAL_UART_CLEAR_IDLEFLAG(huart);
+        
+        // 6. 清除错误码
+        huart->ErrorCode = HAL_UART_ERROR_NONE;
+			}
 }
-
 /**
  * @brief DWT 初始化，用于精密延时
  */
