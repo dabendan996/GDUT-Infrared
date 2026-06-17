@@ -72,6 +72,10 @@ uint8_t data[3]={0};
 uint8_t parity=0;
 static uint32_t last_check = 0;
 uint32_t now_time=0;
+// ===== 添加调试变量 =====
+volatile uint32_t debug_uart_error_count = 0;
+volatile uint32_t debug_uart_recover_count = 0;  
+volatile uint32_t debug_rx_event_count = 0;
 // 全局串口协议实例
 SerialProtocol* g_serialProto = SerialProtocol::getInstance();
 /* USER CODE END PV */
@@ -85,6 +89,7 @@ void Period_Measure_Init(TIM_HandleTypeDef *htim, uint32_t Channel, uint32_t *Da
 void delay_us(uint32_t us);
 void DWT_Init(void);
 void Callback_Fuc(uint8_t *buf, uint16_t len);
+void UART_DMA_CHEACK(void);
 uint8_t uart_cnt = 0;
 /* USER CODE END PFP */
 
@@ -152,35 +157,17 @@ int main(void)
     g_irManager.process();
     g_serialProto->process();
 			
-	now_time=time_handle->getMicroseconds();
-	if ( now_time- last_check >= 200) {
-			last_check = now_time;
-			
-			// 检查USART2的DMAR位
-			if ((USART2->CR3 & USART_CR3_DMAR) == 0) {
-					// DMA接收被禁用，恢复
-					USART2->CR3 |= USART_CR3_DMAR;  // 设置DMAR位
-					
-					// 重新启动DMA
-					HAL_UART_DMAStop(&huart2);
-					__HAL_UART_CLEAR_FLAG(&huart2, UART_FLAG_RXNE);
-					__HAL_UART_CLEAR_FLAG(&huart2, UART_FLAG_IDLE);
-					__HAL_UART_CLEAR_OREFLAG(&huart2);
-					__HAL_UART_CLEAR_NEFLAG(&huart2);
-					__HAL_UART_CLEAR_FEFLAG(&huart2);
-					__HAL_UART_CLEAR_PEFLAG(&huart2);
-					
-					g_serialProto->m_rx_ready = 0;
-					g_serialProto->m_rx_size = 0;
-					
-					HAL_UARTEx_ReceiveToIdle_DMA(&huart2, g_serialProto->m_rx_buffer, 30);
-					__HAL_UART_CLEAR_IDLEFLAG(&huart2);
+		now_time=time_handle->getMicroseconds();
+		if ( now_time- last_check >= 200) 
+			{
+				last_check = now_time;
+				UART_DMA_CHEACK();
 			}
 	}
         /* USER CODE BEGIN 3 */
-    }
-    /* USER CODE END 3 */
 }
+    /* USER CODE END 3 */
+
 
 /**
   * @brief System Clock Configuration
@@ -289,7 +276,48 @@ void delay_us(uint32_t us)
     uint32_t ticks = us * (SystemCoreClock / 1000000);
     while ((DWT->CYCCNT - start) < ticks);
 }
-
+void UART_DMA_CHEACK(void)
+{
+//			// 检查USART2的DMAR位
+//			if ((USART2->CR3 & USART_CR3_DMAR) == 0) {
+//					// DMA接收被禁用，恢复
+//					USART2->CR3 |= USART_CR3_DMAR;  // 设置DMAR位
+//					
+//					// 重新启动DMA
+//					HAL_UART_DMAStop(&huart2);
+//					__HAL_UART_CLEAR_FLAG(&huart2, UART_FLAG_RXNE);
+//					__HAL_UART_CLEAR_FLAG(&huart2, UART_FLAG_IDLE);
+//					__HAL_UART_CLEAR_OREFLAG(&huart2);
+//					__HAL_UART_CLEAR_NEFLAG(&huart2);
+//					__HAL_UART_CLEAR_FEFLAG(&huart2);
+//					__HAL_UART_CLEAR_PEFLAG(&huart2);
+//					
+//					g_serialProto->m_rx_ready = 0;
+//					g_serialProto->m_rx_size = 0;
+//					
+//					HAL_UARTEx_ReceiveToIdle_DMA(&huart2, g_serialProto->m_rx_buffer, 30);
+//					__HAL_UART_CLEAR_IDLEFLAG(&huart2);
+//			}
+		        if ((USART2->CR3 & USART_CR3_DMAR) == 0 || 
+            ((USART2->ISR & USART_ISR_RXNE_RXFNE) && !(USART2->ISR & USART_ISR_IDLE))) {
+            
+            HAL_UART_DMAStop(&huart2);
+            __HAL_UART_CLEAR_FLAG(&huart2, UART_FLAG_RXNE);
+            __HAL_UART_CLEAR_FLAG(&huart2, UART_FLAG_IDLE);
+            __HAL_UART_CLEAR_OREFLAG(&huart2);
+            __HAL_UART_CLEAR_NEFLAG(&huart2);
+            __HAL_UART_CLEAR_FEFLAG(&huart2);
+            __HAL_UART_CLEAR_PEFLAG(&huart2);
+            
+            g_serialProto->m_rx_ready = 0;
+            g_serialProto->m_rx_size = 0;
+            huart2.ErrorCode = HAL_UART_ERROR_NONE;
+            
+            USART2->CR3 |= USART_CR3_DMAR;
+            HAL_UARTEx_ReceiveToIdle_DMA(&huart2, g_serialProto->m_rx_buffer, 30);
+            __HAL_UART_CLEAR_IDLEFLAG(&huart2);
+        }
+}
 /* USER CODE END 4 */
 
 /**
