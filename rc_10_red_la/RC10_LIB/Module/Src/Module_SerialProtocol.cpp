@@ -1,9 +1,6 @@
 #include "Module_SerialProtocol.h"
 #include "BSP_TimeStamp.h"
 #include "Module_Ired.h"
-uint32_t times1=0;
-uint32_t times2=0;
-uint32_t times3=0;
 // 获取单例
 SerialProtocol* SerialProtocol::getInstance() {
     static SerialProtocol instance;
@@ -74,7 +71,6 @@ int SerialProtocol::parseFrame(uint8_t* buffer, uint16_t size, uint8_t* data_out
 
 // ========== 主循环处理 ==========
 void SerialProtocol::process(void) {
-//	  checkAndRestartUart();
     // ========== 1. 处理串口接收数据 ==========
     if (m_rx_ready) {
         m_rx_ready = 0;
@@ -96,7 +92,6 @@ void SerialProtocol::process(void) {
 					{
 						if (m_irManager)
 						{
-						times1++;
 						m_irManager->state = Receive;
 						}
 					}
@@ -108,14 +103,12 @@ void SerialProtocol::process(void) {
                 // 原有去重判断
                 uint8_t is_same_data = (memcmp(received_data, m_last_rx_data, SERIAL_DATA_LEN) == 0);
                 uint8_t is_same_parity = (received_parity == m_last_rx_parity);
-                times2++;
                 if (!is_same_data || (is_same_data && !is_same_parity)) {
                         // 触发红外发送
                         if (m_irManager) {
                             memcpy(m_irManager->Send_Data, received_data, SERIAL_DATA_LEN);
                             m_irManager->Data_cnt_flag = received_parity;
                             m_irManager->state = Send;
-													 times3++;
                         }
                     }
                     // 更新去重记录
@@ -125,8 +118,6 @@ void SerialProtocol::process(void) {
                 // 分支C：完全相同的数据且m_ack_sent=0 → 忽略
             }				
 		 }
-//        memset(m_rx_buffer, 0, sizeof(m_rx_buffer));
-//        m_rx_size = 0;
         if (m_huart) {
             HAL_UARTEx_ReceiveToIdle_DMA(m_huart, m_rx_buffer, 30);
             __HAL_UART_CLEAR_IDLEFLAG(m_huart);

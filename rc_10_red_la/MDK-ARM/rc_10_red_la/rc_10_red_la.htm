@@ -3,7 +3,7 @@
 <title>Static Call Graph - [rc_10_red_la\rc_10_red_la.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image rc_10_red_la\rc_10_red_la.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6240002: Last Updated: Thu Jun 18 06:18:28 2026
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6240002: Last Updated: Thu Jun 18 06:30:00 2026
 <BR><P>
 <H3>Maximum Stack Usage =        456 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -1540,7 +1540,7 @@ Global Symbols
 <LI><a href="#[ab]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[110]"></a>HAL_UARTEx_RxEventCallback</STRONG> (Thumb, 78 bytes, Stack size 16 bytes, main.o(.text.HAL_UARTEx_RxEventCallback))
+<P><STRONG><a name="[110]"></a>HAL_UARTEx_RxEventCallback</STRONG> (Thumb, 56 bytes, Stack size 16 bytes, main.o(.text.HAL_UARTEx_RxEventCallback))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = HAL_UARTEx_RxEventCallback &rArr; SerialProtocol::onUartReceive(unsigned char*, unsigned short)
 </UL>
 <BR>[Calls]<UL><LI><a href="#[111]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SerialProtocol::onUartReceive(unsigned char*, unsigned short)
@@ -1984,7 +1984,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[ab]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[14a]"></a>SerialProtocol::process()</STRONG> (Thumb, 444 bytes, Stack size 40 bytes, module_serialprotocol.o(.text._ZN14SerialProtocol7processEv))
+<P><STRONG><a name="[14a]"></a>SerialProtocol::process()</STRONG> (Thumb, 402 bytes, Stack size 40 bytes, module_serialprotocol.o(.text._ZN14SerialProtocol7processEv))
 <BR><BR>[Stack]<UL><LI>Max Depth = 188<LI>Call Chain = SerialProtocol::process() &rArr; HAL_UARTEx_ReceiveToIdle_DMA &rArr; UART_Start_Receive_DMA &rArr; HAL_DMA_Start_IT &rArr; DMA_SetConfig
 </UL>
 <BR>[Calls]<UL><LI><a href="#[10e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UARTEx_ReceiveToIdle_DMA
