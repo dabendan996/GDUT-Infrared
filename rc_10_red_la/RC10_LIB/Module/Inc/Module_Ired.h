@@ -55,12 +55,6 @@ public:
     // 获取接收到的数据
     void getReceivedData(uint8_t* data_out);
     
-    // 设置响应数据
-    void setResponseData(uint8_t* data);
-    
-    // 设置发送数据
-    void setSendData(uint8_t* data);
-    
     // 红外发送
     void IR_Send(uint8_t* data, uint8_t reset_timeout);
     
@@ -84,17 +78,8 @@ public:
     // 获取 store_flag
     volatile uint8_t getStoreFlag(void);
     
-    // 获取 uart2_data_snd（保持原接口）
-    uint8_t* getUart2DataSnd(void);
-    
-    // 重置发送计数器
-    void resetSendCounter(void);
-    
     void ProcessCaptureCallback(TIM_HandleTypeDef* htim);
     
-    // 设置自动响应
-    void setAutoResponse(bool enable);
-    bool hasPendingData(void);
 		void Clear_Data(void);
     
 public:
@@ -187,9 +172,6 @@ private:
     
     // 新增方法
     void handleNewData(uint8_t* new_data);
-    bool isDataSame(uint8_t* data1, uint8_t* data2);
-    void storeToPendingAndCheck(uint8_t* data);
-    void checkAndSendPendingData(void);
 };
 
 #endif /* IR_MANAGER_H */

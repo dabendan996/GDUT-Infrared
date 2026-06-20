@@ -35,7 +35,7 @@ IRManager::IRManager(uint8_t Send_Data_Type)
     memset(Data_T8_ch2, 0, sizeof(Data_T8_ch2));
     memset(Data_T8_ch3, 0, sizeof(Data_T8_ch3));
     memset(Data_T8_ch4, 0, sizeof(Data_T8_ch4));
-// 队列初始化
+    // 队列初始化
     memset(send_queue, 0, sizeof(send_queue));
     queue_head = 0;
     queue_tail = 0;
@@ -59,7 +59,7 @@ IRManager::IRManager(uint8_t Send_Data_Type)
 void IRManager::init(TIM_HandleTypeDef* htim2, TIM_HandleTypeDef* htim4, TIM_HandleTypeDef* htim3,
                      TIM_HandleTypeDef* htim1, TIM_HandleTypeDef* htim8)
 {
-    htim2_ptr = htim2;//定时器2是生成PWM波形的
+    htim2_ptr = htim2;
     htim4_ptr = htim4;
     htim3_ptr = htim3;
     htim1_ptr = htim1;
@@ -107,55 +107,11 @@ void IRManager::Period_Measure_Init(TIM_HandleTypeDef* htim, uint32_t Channel, u
     __HAL_TIM_SET_COUNTER(htim, 0);
     HAL_TIM_IC_Start_DMA(htim, Channel, Data, LENGTH);
 }
-
-// ========== 新增队列接口实现 ==========
-bool IRManager::hasPendingData(void)
-{
-    return (queue_count > 0);
-}
-
-//void IRManager::processSendQueue(void)
-//{
-//    if (store_flag == 0 && queue_count > 0)
-//    {
-//        memcpy(uart2_data_snd + 2, send_queue[queue_head], 4);
-//        queue_head = (queue_head + 1) % QUEUE_SIZE;
-//        queue_count--;
-//        store_flag = 1;
-//    }
-//}
-
-// ========== 新增300ms窗口处理函数 ==========
-bool IRManager::isDataSame(uint8_t* data1, uint8_t* data2)
-{
-    return (memcmp(data1, data2, 4) == 0);
-}
-
-void IRManager::storeToPendingAndCheck(uint8_t* data)
-{
-    memcpy(pending_command, data, 4);
-    has_pending_command = 1;
-}
-
-void IRManager::checkAndSendPendingData(void)
-{
-    if (has_pending_command && store_flag == 0)
-    {
-        memcpy(uart2_data_snd + 2, pending_command, 4);
-        store_flag = 1;
-        has_pending_command = 0;
-    }
-}
 void IRManager::handleNewData(uint8_t* new_data)
 {
     uint64_t now_us = TimeStamp::getInstance().getMicroseconds();
-    
-
-    // 数据去重检查
     if (last_data_valid && memcmp(new_data, last_processed_data, 4) == 0)
     {
-
-        // ★ 无论窗口内外，相同数据都不更新 last_processed_data 和 last_received_command
         return;  // 直接返回，不继续处理
     }
 
@@ -169,28 +125,13 @@ void IRManager::handleNewData(uint8_t* new_data)
         }
         last_capture_tick_us = TimeStamp::getInstance().getMicroseconds();
 				// 保存本次数据供下次去重
-//				for(uint8_t i=0;i<4;i++)
-//				{
-//					last_processed_data[i]=new_data[i];
-//				}
 				memcpy(last_processed_data, new_data, 4);
-				
     }
 		last_data_valid = 1;
 }
 void IRManager::getReceivedData(uint8_t* data_out)
 {
     memcpy(data_out, Send_Data, 3);
-}
-
-void IRManager::setResponseData(uint8_t* data)
-{
-    memcpy(Respon_Data, data, 3);
-}
-
-void IRManager::setSendData(uint8_t* data)
-{
-    memcpy(Send_Data, data, 3);
 }
 
 Data_State IRManager::getState(void) const
@@ -203,22 +144,6 @@ volatile uint8_t IRManager::getStoreFlag(void)
     return store_flag;
 }
 
-uint8_t* IRManager::getUart2DataSnd(void)
-{
-    return uart2_data_snd;
-}
-
-void IRManager::resetSendCounter(void)
-{
-    send_cnt = 0;
-    Start_Send_delay = 0;
-}
-
-void IRManager::setAutoResponse(bool enable)
-{
-    m_auto_response = enable;
-}
-
 void IRManager::Red_Ray_DATA_Procss(uint32_t* Data, HAL_TIM_ActiveChannel channel)
 {  
     uint16_t break_step = 0;
@@ -226,147 +151,147 @@ void IRManager::Red_Ray_DATA_Procss(uint32_t* Data, HAL_TIM_ActiveChannel channe
     uint16_t count_data = 0;
     if (Ired_Type_Get()==R1)
 		{
-			uint16_t R1_Rec_start = 0;
-			for(uint16_t i = 0; i < 69; i++)
-			{
-					if (Data[i+1] >= Data[i])
-					{
-							temp = Data[i+1] - Data[i];
-					}
-					else 
-					{
-							temp = Data[i+1] + (0xFFFF - Data[i]) + 1;
-					}
-					if(temp > 9000)
-					{
-							start_flag = 1;
-					}
-					if(start_flag == 1)
-					{
-							Data3[count_data] = temp;
-							if((temp > 2000 && temp < 2500))
-							{
-									if(R1_Rec_start == 1)
+				uint16_t R1_Rec_start = 0;
+				for(uint16_t i = 0; i < 69; i++)
+				{
+						if (Data[i+1] >= Data[i])
+						{
+								temp = Data[i+1] - Data[i];
+						}
+						else 
+						{
+								temp = Data[i+1] + (0xFFFF - Data[i]) + 1;
+						}
+						if(temp > 9000)
+						{
+								start_flag = 1;
+						}
+						if(start_flag == 1)
+						{
+									Data3[count_data] = temp;
+									if((temp > 2000 && temp < 2500))
 									{
-											Data1[count] = 1;
-											count++;
+												if(R1_Rec_start == 1)
+												{
+														Data1[count] = 1;
+														count++;
+												}
+												if(count == 0)
+												{
+														R1_Rec_start = 1;
+												}
 									}
-									if(count == 0)
+									else if(temp > 800 && temp < 1500)
 									{
-											R1_Rec_start = 1;
+												if(count == 0 && R1_Rec_start == 0)
+												{
+														break_step = 1;
+														break;
+												}
+												else if(R1_Rec_start == 1) 
+												{
+														Data1[count] = 0;
+														count++;
+												}
 									}
-							}
-							else if(temp > 800 && temp < 1500)
-							{
-									if(count == 0 && R1_Rec_start == 0)
-									{
-											break_step = 1;
-											break;
-									}
-									else if(R1_Rec_start == 1) 
-									{
-											Data1[count] = 0;
-											count++;
-									}
-							}
-							count_data++;
-					}
-			}
+									count_data++;
+						}
+				}
     }
 		else if(Ired_Type_Get()==R2)
 		{
 				uint16_t R2_Rec_start=0;
 				for(uint16_t i=0;i<69;i++)
 				{
-						if (Data[i+1] >= Data[i])
-						{
-							temp = Data[i+1] - Data[i];
-						}
-						else 
-						{
-							// 发生了溢出
-							temp = Data[i+1] + (0xFFFF - Data[i]) + 1;
-						}
-						if(temp>9000)
-						{
-							start_flag=1;
-						}
-						if(start_flag==1)
-						{
-								Data3[count_data]=temp;
-								if((temp>2000&&temp<2500))
-								{
-										if(count==0&&R2_Rec_start==0)
+							if (Data[i+1] >= Data[i])
+							{
+								temp = Data[i+1] - Data[i];
+							}
+							else 
+							{
+								// 发生了溢出
+								temp = Data[i+1] + (0xFFFF - Data[i]) + 1;
+							}
+							if(temp>9000)
+							{
+								start_flag=1;
+							}
+							if(start_flag==1)
+							{
+										Data3[count_data]=temp;
+										if((temp>2000&&temp<2500))
 										{
-											break_step=1;
-											break;
+													if(count==0&&R2_Rec_start==0)
+													{
+														break_step=1;
+														break;
+													}
+													else if(R2_Rec_start==1)
+													{
+													Data1[count]=1;
+													count++;
+													}
 										}
-										else if(R2_Rec_start==1)
+										else if(temp>800&&temp<1500)
 										{
-										Data1[count]=1;
-										count++;
+													if(R2_Rec_start==1)
+													{
+														Data1[count]=0;
+														count++;
+													}
+													if(count==0)
+													{
+														R2_Rec_start=1;
+													}
 										}
-								}
-								else if(temp>800&&temp<1500)
-								{
-										if(R2_Rec_start==1)
-										{
-											Data1[count]=0;
-											count++;
-										}
-										if(count==0)
-										{
-											R2_Rec_start=1;
-										}
-								}
-								count_data++;
-						}		
+										count_data++;
+							}		
 				}
 		}
     if(break_step == 0)
     {
-			uint8_t frame_processed = 0;  // 添加标志
-        for(uint8_t i = 0; i < LENGTH/8; i++)
-        {
-            uint8_t val = 0;
-            val |= Data1[8*i];
-            val |= Data1[8*i+1] << 1;
-            val |= Data1[8*i+2] << 2;
-            val |= Data1[8*i+3] << 3;
-            val |= Data1[8*i+4] << 4;
-            val |= Data1[8*i+5] << 5;
-            val |= Data1[8*i+6] << 6;
-            val |= Data1[8*i+7] << 7;
-            Data2[i] = val;
-            if(((i+1)%4)==0)
-            {
-                uint8_t crc = ~(((Data2[i-1]+Data2[i-2]+Data2[i-3])*(Data2[i-1]+Data2[i-2]+Data2[i-3]))&0xFF);
-                crc = crc & 0x3F;
-							  Data2[i]=Data2[i]&0x7F;//有效的是7位，6位拿来校验，还有一位是标志位
-							if(crc == (Data2[i]&0x3F))
+			  	uint8_t frame_processed = 0;  // 添加标志
+					for(uint8_t i = 0; i < LENGTH/8; i++)
+					{
+							uint8_t val = 0;
+							val |= Data1[8*i];
+							val |= Data1[8*i+1] << 1;
+							val |= Data1[8*i+2] << 2;
+							val |= Data1[8*i+3] << 3;
+							val |= Data1[8*i+4] << 4;
+							val |= Data1[8*i+5] << 5;
+							val |= Data1[8*i+6] << 6;
+							val |= Data1[8*i+7] << 7;
+							Data2[i] = val;
+							if(((i+1)%4)==0)
 							{
-								step2++;
+									uint8_t crc = ~(((Data2[i-1]+Data2[i-2]+Data2[i-3])*(Data2[i-1]+Data2[i-2]+Data2[i-3]))&0xFF);
+									crc = crc & 0x3F;
+									Data2[i]=Data2[i]&0x7F;//有效的是7位，6位拿来校验，还有一位是标志位
+									if(crc == (Data2[i]&0x3F))
+									{
+										step2++;
+									}
+									if(crc == (Data2[i]&0x3F) && state == Receive)
+									{
+											if(Data2[i-1]+Data2[i-2]+Data2[i-3]==0)
+											{
+													state = Receive;
+													break;
+											}
+											else
+											{
+												if (!frame_processed) 
+												{
+														uint8_t new_data[4];
+														memcpy(new_data, &Data2[i-3], 4);
+														handleNewData(new_data);
+														frame_processed = 1;
+												}             
+											}
+									}
 							}
-//                Data2[i] = Data2[i] & 0x7F;
-                if(crc == (Data2[i]&0x3F) && state == Receive)
-                {
-                    if(Data2[i-1]+Data2[i-2]+Data2[i-3]==0)
-                    {
-                        state = Receive;
-                        break;
-                    }
-                    else
-                    {
-                    if (!frame_processed) {
-                        uint8_t new_data[4];
-                        memcpy(new_data, &Data2[i-3], 4);
-                        handleNewData(new_data);
-                        frame_processed = 1;
-                    }             
-                    }
-                }
-            }
-        }
+					}
     }
     count = 0;
 }
@@ -654,12 +579,12 @@ void IRManager::process(void)
         capture_active = 1;
         need_to_enable_capture = 0;
     }		
-	if (state == Receive && store_flag == 0 && queue_count > 0)//防止串口数据还没发送完成造成数据覆盖，将数据存入缓存区
-	{
+		if (state == Receive && store_flag == 0 && queue_count > 0)//防止串口数据还没发送完成造成数据覆盖，将数据存入缓存区
+		{
 //			SerialProtocol::getInstance().pushToSendQueue(send_queue[queue_head]);
-			queue_head = (queue_head + 1) % QUEUE_SIZE;
-			queue_count--;
-	}
+				queue_head = (queue_head + 1) % QUEUE_SIZE;
+				queue_count--;
+		}
 }
 
 

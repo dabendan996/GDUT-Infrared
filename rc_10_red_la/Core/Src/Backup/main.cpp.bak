@@ -68,25 +68,16 @@ uint8_t Need_Send_Data[30] = {0};
 Data_State state = Receive;
 IRManager g_irManager(0);  // R1首位发0，R2首位发1I
 uint8_t Usart_Receive_Suc_Flag = 0;
-volatile uint8_t uart_tx_complete = 0;
-uint64_t times=0;
 uint8_t data[3]={0};
 uint8_t parity=0;
-static uint8_t last_data[4] = {0};
-static uint8_t last_valid = 0;
-uint8_t current_data[4] = {0};
-uint8_t parse_success = 0;
-// 定义标志位
-volatile uint8_t g_send_complete = 0;
-volatile uint8_t g_send_success = 0;
-// 定义标志位
-volatile uint8_t g_data_received = 0;     // 数据接收标志
-volatile uint8_t g_recv_data[3];          // 接收到的数据
-volatile uint8_t g_recv_parity;           // 接收到的奇偶位
-
+static uint32_t last_check = 0;
+uint32_t now_time=0;
+// ===== 添加调试变量 =====
+volatile uint32_t debug_uart_error_count = 0;
+volatile uint32_t debug_uart_recover_count = 0;  
+volatile uint32_t debug_rx_event_count = 0;
 // 全局串口协议实例
 SerialProtocol* g_serialProto = SerialProtocol::getInstance();
-//Serial1Protocol& g_serialProto1=Serial1Protocol::getInstance();
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -99,57 +90,11 @@ void delay_us(uint32_t us);
 void DWT_Init(void);
 void Callback_Fuc(uint8_t *buf, uint16_t len);
 uint8_t uart_cnt = 0;
-
-
-// ===== 添加调试变量 =====
-volatile uint32_t debug_uart_irq_count = 0;      // 串口中断次数
-volatile uint32_t debug_dma_rx_count = 0;        // DMA接收完成次数
-volatile uint32_t debug_uart_error_count = 0;    // 串口错误次数
-volatile uint32_t debug_process_count = 0;       // process调用次数
-volatile uint8_t debug_last_state = 0;           // 最后状态
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-// 串口1发送结果回调
-void onSerial1SendResult(uint8_t* data, uint8_t parity, uint8_t success) {
-    g_send_success = success;      // 保存结果
-    g_send_complete = 1;            // 设置完成标志
-}
 
-// 等待发送完成的函数（无限等待）
-//void waitForSendComplete(void) {
-//    while (1) {
-//        Serial1Protocol::getInstance().process();  // 必须持续处理
-//        if (g_send_complete) {
-//            g_send_complete = 0;  // 清除标志
-//            break;  // 退出循环
-//        }
-//        HAL_Delay(1);
-//    }
-//}
-// 数据接收回调
-void onSerial1DataReceived(uint8_t* data, uint8_t parity) {
-    // 直接使用传入的 data 和 parity
-    g_recv_data[0] = data[0];
-    g_recv_data[1] = data[1];
-    g_recv_data[2] = data[2];
-    g_recv_parity = parity;
-    // 设置标志位
-    g_data_received = 1;
-    
-    // 注意：不需要手动发送应答，协议层会自动处理
-}
-
-
-//// 等待数据接收（无限等待）
-//void waitForData(void) {
-//    while (g_data_received == 0) {
-//        Serial1Protocol::getInstance().process();
-//        HAL_Delay(1);
-//    }
-//    g_data_received = 0;  // 清除标志
-//}
 /* USER CODE END 0 */
 
 /**
@@ -157,6 +102,7 @@ void onSerial1DataReceived(uint8_t* data, uint8_t parity) {
   * @retval int
   */
 int main(void)
+
 {
     /* USER CODE BEGIN 1 */
 
@@ -202,15 +148,6 @@ int main(void)
 
     // 初始化串口协议，传入 IRManager 指针
     g_serialProto->init(&huart2, &g_irManager);
-
-//    g_serialProto1.init(&huart2);
-		  // 设置回调
-//    g_serialProto1.setSendResultCallback(onSerial1SendResult);
-//		// 设置回调
-//    g_serialProto1.setDataReceiveCallback(onSerial1DataReceived);
-//    Serial1Protocol::getInstance().setDataReceiveCallback(onSerial1DataReceived);
-//    Serial1Protocol::getInstance().setSendResultCallback(onSerial1SendResult);
-
     /* USER CODE END 2 */
 
     /* Infinite loop */
@@ -219,10 +156,11 @@ int main(void)
         // 处理红外模块
     g_irManager.process();
     g_serialProto->process();
+	}
         /* USER CODE BEGIN 3 */
-    }
-    /* USER CODE END 3 */
 }
+    /* USER CODE END 3 */
+
 
 /**
   * @brief System Clock Configuration
@@ -310,43 +248,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
     if (huart->Instance == USART2) {
         g_serialProto->onUartReceive(huart->pRxBuffPtr, Size);
-			  times++;
     }
-}
-void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
-    if (huart->Instance == USART2) {
-        debug_uart_error_count++;
-        
-        uint32_t error_code = huart->ErrorCode;
-        debug_last_state = 1;
-        
-        // ===== 错误恢复 =====
-        // 1. 停止DMA
-        HAL_UART_DMAStop(huart);
-        
-        // 2. 清除标志
-        __HAL_UART_CLEAR_OREFLAG(huart);
-        __HAL_UART_CLEAR_NEFLAG(huart);
-        __HAL_UART_CLEAR_FEFLAG(huart);
-        __HAL_UART_CLEAR_PEFLAG(huart);
-        __HAL_UART_CLEAR_FLAG(huart, UART_FLAG_RXNE);
-        __HAL_UART_CLEAR_FLAG(huart, UART_FLAG_IDLE);
-        
-        // 3. 重置状态
-        g_serialProto->m_rx_ready = 0;
-        g_serialProto->m_rx_size = 0;
-        memset(g_serialProto->m_rx_buffer, 0, 30);
-        
-        // 4. 延时一小段时间（等待对方稳定）
-        HAL_Delay(10);
-        
-        // 5. 重新启动
-        HAL_UARTEx_ReceiveToIdle_DMA(huart, g_serialProto->m_rx_buffer, 30);
-        __HAL_UART_CLEAR_IDLEFLAG(huart);
-        
-        // 6. 清除错误码
-        huart->ErrorCode = HAL_UART_ERROR_NONE;
-			}
 }
 /**
  * @brief DWT 初始化，用于精密延时
@@ -367,6 +269,36 @@ void delay_us(uint32_t us)
     uint32_t ticks = us * (SystemCoreClock / 1000000);
     while ((DWT->CYCCNT - start) < ticks);
 }
+extern  void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+	// 清除所有可能的错误标志
+    if (__HAL_UART_GET_FLAG(huart, UART_FLAG_PE))
+    {
+        __HAL_UART_CLEAR_FLAG(huart, UART_CLEAR_PEF);// 清除奇偶校验错误标志
+    }
+    
+    if (__HAL_UART_GET_FLAG(huart, UART_FLAG_FE))
+    {
+        __HAL_UART_CLEAR_FLAG(huart, UART_CLEAR_FEF);// 清除帧错误标志
+    }
+    
+    if (__HAL_UART_GET_FLAG(huart, UART_FLAG_NE))
+    {
+        __HAL_UART_CLEAR_FLAG(huart, UART_CLEAR_NEF);// 清除噪声错误标志
+    }
+    
+    if (__HAL_UART_GET_FLAG(huart, UART_FLAG_ORE))
+    {
+        __HAL_UART_CLEAR_FLAG(huart, UART_CLEAR_OREF);// 清除溢出错误标志
+    }
+	
+	if (__HAL_UART_GET_FLAG(huart, UART_FLAG_LBDF))
+    {
+        __HAL_UART_CLEAR_FLAG(huart, UART_CLEAR_LBDF);// LIN断点检测标志处理
+    }
+	  HAL_UARTEx_ReceiveToIdle_DMA(&huart2, g_serialProto->m_rx_buffer, 30);
+		__HAL_UART_CLEAR_IDLEFLAG(&huart2);
+	}
 
 /* USER CODE END 4 */
 
@@ -378,8 +310,6 @@ void delay_us(uint32_t us)
 void MPU_Config(void)
 {
     MPU_Region_InitTypeDef MPU_InitStruct = {0};
-
-    /* Disables the MPU */
     HAL_MPU_Disable();
 
     /** Initializes and configures the Region and the memory to be protected

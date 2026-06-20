@@ -70,61 +70,65 @@ int SerialProtocol::parseFrame(uint8_t* buffer, uint16_t size, uint8_t* data_out
 
 
 // ========== 主循环处理 ==========
-void SerialProtocol::process(void) {
+void SerialProtocol::process(void) 
+{
     // ========== 1. 处理串口接收数据 ==========
-    if (m_rx_ready) {
+    if (m_rx_ready) 
+		{
         m_rx_ready = 0;
         uint8_t received_data[SERIAL_DATA_LEN];
         uint8_t received_parity;
         
-        if (parseFrame(m_rx_buffer, m_rx_size, received_data, &received_parity)) {
+        if (parseFrame(m_rx_buffer, m_rx_size, received_data, &received_parity)) 
+				{
             
             // 检查是否是串口应答（数据全0）
-            uint8_t is_ack = (received_data[0] == 0x00 && 
-                              received_data[1] == 0x00 && 
-                              received_data[2] == 0x00);
-					
-            uint8_t is_stop=(received_data[0] == 0xFF && 
-                              received_data[1] == 0xFF && 
-                              received_data[2] == 0xFF);
-					
-					if(is_stop==1)
-					{
-						if (m_irManager)
-						{
-						m_irManager->state = Receive;
-						}
-					}
-					else
-					{
-
-            if (m_state == SERIAL_STATE_IDLE && !is_ack) 
+							uint8_t is_ack = (received_data[0] == 0x00 && 
+																received_data[1] == 0x00 && 
+																received_data[2] == 0x00);
+						
+							uint8_t is_stop=(received_data[0] == 0xFF && 
+																received_data[1] == 0xFF && 
+																received_data[2] == 0xFF);
+						
+							if(is_stop==1)
 							{
-                // 原有去重判断
-                uint8_t is_same_data = (memcmp(received_data, m_last_rx_data, SERIAL_DATA_LEN) == 0);
-                uint8_t is_same_parity = (received_parity == m_last_rx_parity);
-                if (!is_same_data || (is_same_data && !is_same_parity)) {
-                        // 触发红外发送
-                        if (m_irManager) {
-                            memcpy(m_irManager->Send_Data, received_data, SERIAL_DATA_LEN);
-                            m_irManager->Data_cnt_flag = received_parity;
-                            m_irManager->state = Send;
-                        }
-                    }
-                    // 更新去重记录
-                    memcpy(m_last_rx_data, received_data, SERIAL_DATA_LEN);
-                    m_last_rx_parity = received_parity;
-                }
-                // 分支C：完全相同的数据且m_ack_sent=0 → 忽略
-            }				
-		 }
-        if (m_huart) {
+									if (m_irManager)
+									{
+									  m_irManager->state = Receive;
+									}
+							}
+							else
+							{
+
+								if (m_state == SERIAL_STATE_IDLE && !is_ack) 
+									{
+										// 原有去重判断
+										uint8_t is_same_data = (memcmp(received_data, m_last_rx_data, SERIAL_DATA_LEN) == 0);
+										uint8_t is_same_parity = (received_parity == m_last_rx_parity);
+										if (!is_same_data || (is_same_data && !is_same_parity)) 
+											 {
+														// 触发红外发送
+														if (m_irManager) 
+														{
+																memcpy(m_irManager->Send_Data, received_data, SERIAL_DATA_LEN);
+																m_irManager->Data_cnt_flag = received_parity;
+																m_irManager->state = Send;
+														}
+												}
+												// 更新去重记录
+												memcpy(m_last_rx_data, received_data, SERIAL_DATA_LEN);
+												m_last_rx_parity = received_parity;
+									}
+										// 分支C：完全相同的数据且m_ack_sent=0 → 忽略
+							}				
+		    }
+        if (m_huart) 
+				{
             HAL_UARTEx_ReceiveToIdle_DMA(m_huart, m_rx_buffer, 30);
             __HAL_UART_CLEAR_IDLEFLAG(m_huart);
         }
-   }
-
-
+    }
 }
 
 // ========== 串口回调 ==========
@@ -133,27 +137,5 @@ void SerialProtocol::onUartReceive(uint8_t* buffer, uint16_t size) {
         memcpy(m_rx_buffer, buffer, size);
         m_rx_size = size;
         m_rx_ready = 1;
-    }
-}
-
-// 在 SerialProtocol 类中添加方法
-void SerialProtocol::checkAndRestartUart(void) {
-    if (!m_huart) return;
-    
-    // 检查串口状态
-    if (__HAL_UART_GET_FLAG(m_huart, UART_FLAG_ORE) ||  // 溢出错误
-        __HAL_UART_GET_FLAG(m_huart, UART_FLAG_NE) ||   // 噪声错误
-        __HAL_UART_GET_FLAG(m_huart, UART_FLAG_FE) ||   // 帧错误
-        __HAL_UART_GET_FLAG(m_huart, UART_FLAG_PE)) {   // 奇偶校验错误
-        
-        // 清除错误标志
-        __HAL_UART_CLEAR_OREFLAG(m_huart);
-        __HAL_UART_CLEAR_NEFLAG(m_huart);
-        __HAL_UART_CLEAR_FEFLAG(m_huart);
-        __HAL_UART_CLEAR_PEFLAG(m_huart);
-        
-        // 重新启动DMA接收
-        HAL_UARTEx_ReceiveToIdle_DMA(m_huart, m_rx_buffer, 30);
-        __HAL_UART_CLEAR_IDLEFLAG(m_huart);
     }
 }

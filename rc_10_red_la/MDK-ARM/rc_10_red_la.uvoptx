@@ -190,6 +190,16 @@
           <WinNumber>1</WinNumber>
           <ItemText>debug_uart_error_count</ItemText>
         </Ww>
+        <Ww>
+          <count>7</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>g_serialProto</ItemText>
+        </Ww>
+        <Ww>
+          <count>8</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>debug_uart_error_count,0x0A</ItemText>
+        </Ww>
       </WatchWindow1>
       <WatchWindow2>
         <Ww>
@@ -271,6 +281,11 @@
           <count>15</count>
           <WinNumber>2</WinNumber>
           <ItemText>times2</ItemText>
+        </Ww>
+        <Ww>
+          <count>16</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>g_serialProto</ItemText>
         </Ww>
       </WatchWindow2>
       <Tracepoint>
